@@ -21,6 +21,13 @@ export default function App() {
     return Object.entries(result.metadata);
   }, [result]);
 
+  const activeSampleLabel = useMemo(() => {
+    const activeSample = SAMPLE_STORIES.find(
+      (sample) => sample.story === story && sample.style === style
+    );
+    return activeSample?.label || "";
+  }, [story, style]);
+
   async function handleGenerate(event) {
     event.preventDefault();
     setLoading(true);
@@ -46,17 +53,25 @@ export default function App() {
   return (
     <main className="app-shell">
       <section className="masthead">
-        <div>
+        <div className="masthead-copy">
           <p className="eyebrow">STAIR x Scaler School of Technology</p>
           <h1>Narrative-to-Visual Story Agent</h1>
           <p className="subtitle">
-            Free-form story in, structured script, visual plan, and sequential
-            SVG storyboard frames out.
+            Convert free-form stories into structured scripts, visual plans,
+            and storyboard frames.
           </p>
+          <div className="hero-badges" aria-label="Project attributes">
+            <span>Task 1 Submission</span>
+            <span>Storyboard-first</span>
+            <span>Deterministic Agent Pipeline</span>
+          </div>
         </div>
-        <div className="api-pill">
-          <span className="status-dot" />
-          API {API_BASE_URL}
+        <div className="api-card">
+          <div className="api-pill">
+            <span className="status-dot" />
+            <span>API endpoint</span>
+          </div>
+          <strong>{API_BASE_URL}</strong>
         </div>
       </section>
 
@@ -72,40 +87,50 @@ export default function App() {
             onLanguageChange={setLanguage}
             onSubmit={handleGenerate}
           />
-          <TestCases onSelect={handleSampleSelect} />
+          <TestCases
+            activeSampleLabel={activeSampleLabel}
+            onSelect={handleSampleSelect}
+          />
         </div>
 
         <div className="output-column">
           {error ? <div className="alert error">{error}</div> : null}
           {loading ? (
-            <div className="loading-panel">
-              <div className="loader" />
-              <span>Planning scenes and rendering storyboard frames...</span>
-            </div>
+            <LoadingState />
           ) : null}
 
           {!result && !loading ? (
-            <div className="empty-state">
-              <h2>Ready for generation</h2>
-              <p>
-                Choose a sample or paste your own narrative, then generate the
-                scene plan and storyboard.
-              </p>
-            </div>
+            <EmptyState />
           ) : null}
 
           {result ? (
             <>
-              <section className="result-section">
+              <section className="result-section overview-card">
                 <div className="section-heading">
-                  <h2>Original Story</h2>
+                  <div>
+                    <p className="section-kicker">Output Overview</p>
+                    <h2>Generated Story Package</h2>
+                  </div>
+                  <span>{result.observability.sceneCount} scenes</span>
                 </div>
-                <p className="original-story">{result.originalStory}</p>
+                <p className="original-story">{getExcerpt(result.originalStory)}</p>
+                <div className="overview-metrics">
+                  <Metric label="Genre" value={result.metadata.genre} />
+                  <Metric label="Tone" value={result.metadata.tone} />
+                  <Metric
+                    label="Audience"
+                    value={result.metadata.targetAudience}
+                  />
+                  <Metric label="Language" value={result.metadata.language} />
+                </div>
               </section>
 
               <section className="result-section">
                 <div className="section-heading">
-                  <h2>Metadata</h2>
+                  <div>
+                    <p className="section-kicker">Metadata</p>
+                    <h2>Story Classification</h2>
+                  </div>
                 </div>
                 <dl className="metadata-grid">
                   {metadataItems.map(([key, value]) => (
@@ -123,7 +148,10 @@ export default function App() {
 
               <section className="result-section">
                 <div className="section-heading">
-                  <h2>Observability</h2>
+                  <div>
+                    <p className="section-kicker">Observability</p>
+                    <h2>Runtime Notes</h2>
+                  </div>
                   <span>{result.observability.sceneCount} scenes</span>
                 </div>
                 <p className="determinism">
@@ -136,7 +164,7 @@ export default function App() {
                     ))}
                   </ul>
                 ) : (
-                  <p className="success-text">No warnings returned.</p>
+                  <p className="success-text">No warnings reported.</p>
                 )}
               </section>
             </>
@@ -151,3 +179,99 @@ function formatLabel(key) {
   return key.replace(/([A-Z])/g, " $1").replace(/^./, (char) => char.toUpperCase());
 }
 
+function getExcerpt(text) {
+  if (!text || text.length <= 260) return text;
+  return `${text.slice(0, 257).trim()}...`;
+}
+
+function Metric({ label, value }) {
+  return (
+    <div className="metric-card">
+      <span>{label}</span>
+      <strong>{value || "Not specified"}</strong>
+    </div>
+  );
+}
+
+function EmptyState() {
+  const steps = ["Understand story", "Plan scenes", "Render storyboard"];
+  const previews = [
+    {
+      title: "Script",
+      subtitle: "Scene breakdown",
+      variant: "script"
+    },
+    {
+      title: "Visual Plan",
+      subtitle: "Style + pacing",
+      variant: "visual"
+    },
+    {
+      title: "Storyboard",
+      subtitle: "SVG frames",
+      variant: "storyboard"
+    }
+  ];
+
+  return (
+    <section className="empty-state">
+      <div className="empty-preview-grid" aria-hidden="true">
+        {previews.map((preview) => (
+          <article className="empty-preview-card" key={preview.title}>
+            <div className={`empty-preview-icon ${preview.variant}`}>
+              <span />
+              <span />
+              <span />
+            </div>
+            <strong>{preview.title}</strong>
+            <small>{preview.subtitle}</small>
+          </article>
+        ))}
+      </div>
+      <h2>Ready to turn your story into a visual plan</h2>
+      <p>
+        Choose a sample story or paste your own narrative to generate a
+        structured script, scene plan, and sequential storyboard frames.
+      </p>
+      <ol className="empty-steps">
+        {steps.map((step) => (
+          <li key={step}>{step}</li>
+        ))}
+      </ol>
+    </section>
+  );
+}
+
+function LoadingState() {
+  const stages = [
+    "Understanding narrative...",
+    "Planning scenes...",
+    "Rendering storyboard frames..."
+  ];
+
+  return (
+    <section className="loading-panel" aria-live="polite">
+      <div className="loading-header">
+        <div className="loader" />
+        <div>
+          <h2>Generating...</h2>
+          <p>Building a grounded story plan from your narrative.</p>
+        </div>
+      </div>
+      <div className="loading-steps">
+        {stages.map((stage) => (
+          <div className="loading-step" key={stage}>
+            <span />
+            <strong>{stage}</strong>
+          </div>
+        ))}
+      </div>
+      <div className="skeleton-grid" aria-hidden="true">
+        <span />
+        <span />
+        <span />
+        <span />
+      </div>
+    </section>
+  );
+}

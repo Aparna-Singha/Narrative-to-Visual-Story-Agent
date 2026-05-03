@@ -19,9 +19,16 @@ export default function StoryInput({
   return (
     <form className="input-panel" onSubmit={onSubmit}>
       <div className="panel-heading">
-        <h2>Story Input</h2>
-        <span>{story.trim().length} characters</span>
+        <div>
+          <p className="section-kicker">Create</p>
+          <h2>Create a visual story</h2>
+        </div>
+        <span className="character-count">{story.trim().length} characters</span>
       </div>
+      <p className="panel-helper">
+        Paste a narrative idea, choose a style, and generate a structured
+        script with storyboard-ready frames.
+      </p>
 
       <label className="field">
         <span>Free-form narrative</span>
@@ -59,9 +66,8 @@ export default function StoryInput({
       </div>
 
       <button className="primary-button" type="submit" disabled={loading}>
-        {loading ? "Generating..." : "Generate Storyboard"}
+        <span>{loading ? "Generating..." : "Generate Storyboard"}</span>
       </button>
     </form>
   );
 }
-

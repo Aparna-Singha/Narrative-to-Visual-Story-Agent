@@ -1,6 +1,7 @@
 export const SAMPLE_STORIES = [
   {
     label: "Lonely robot",
+    badge: "Emotional Mystery",
     style: "cinematic",
     story:
       "A lonely robot wakes up in an abandoned railway station and tries to find where the last train went.",
@@ -9,6 +10,7 @@ export const SAMPLE_STORIES = [
   },
   {
     label: "Glowing seed",
+    badge: "Moral Drama",
     style: "children book",
     story:
       "A village girl discovers a glowing seed during a drought and must decide whether to plant it or sell it.",
@@ -17,6 +19,7 @@ export const SAMPLE_STORIES = [
   },
   {
     label: "Mars signal",
+    badge: "Sci-Fi Suspense",
     style: "realistic",
     story:
       "Two astronauts on Mars receive a strange signal from beneath the ground.",
@@ -25,22 +28,31 @@ export const SAMPLE_STORIES = [
   }
 ];
 
-export default function TestCases({ onSelect }) {
+export default function TestCases({ activeSampleLabel, onSelect }) {
   return (
     <section className="sample-panel">
       <div className="panel-heading">
-        <h2>Sample Tests</h2>
+        <div>
+          <p className="section-kicker">Samples</p>
+          <h2>Sample stories</h2>
+        </div>
         <span>3 stories</span>
       </div>
       <div className="sample-list">
         {SAMPLE_STORIES.map((sample) => (
           <button
             type="button"
-            className="sample-button"
+            className={`sample-button ${
+              activeSampleLabel === sample.label ? "is-active" : ""
+            }`}
             key={sample.label}
             onClick={() => onSelect(sample)}
+            aria-pressed={activeSampleLabel === sample.label}
           >
-            <span>{sample.label}</span>
+            <span className="sample-card-top">
+              <strong>{sample.label}</strong>
+              <em>{sample.badge}</em>
+            </span>
             <small>{sample.expected}</small>
           </button>
         ))}
@@ -48,4 +60,3 @@ export default function TestCases({ onSelect }) {
     </section>
   );
 }
-

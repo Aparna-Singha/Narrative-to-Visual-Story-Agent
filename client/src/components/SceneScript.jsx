@@ -2,7 +2,10 @@ export default function SceneScript({ scenes }) {
   return (
     <section className="result-section">
       <div className="section-heading">
-        <h2>Scene Script</h2>
+        <div>
+          <p className="section-kicker">Script</p>
+          <h2>Scene-by-scene Script</h2>
+        </div>
         <span>{scenes.length} planned scenes</span>
       </div>
       <div className="scene-list">
@@ -16,18 +19,26 @@ export default function SceneScript({ scenes }) {
               </div>
             </div>
             <p>{scene.summary}</p>
+            <div className="character-pills" aria-label="Characters">
+              {scene.characters.map((character) => (
+                <span key={character}>{character}</span>
+              ))}
+            </div>
             <div className="dialogue-block">
+              <span className="block-label">Dialogue</span>
               {scene.dialogue.map((line, index) => (
                 <p key={`${line.speaker}-${index}`}>
                   <strong>{line.speaker}:</strong> {line.line}
                 </p>
               ))}
             </div>
-            <p className="transition">Transition: {scene.transition}</p>
+            <p className="transition">
+              <span>Transition</span>
+              {scene.transition}
+            </p>
           </article>
         ))}
       </div>
     </section>
   );
 }
-
